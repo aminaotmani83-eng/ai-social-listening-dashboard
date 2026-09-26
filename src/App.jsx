@@ -2,7 +2,10 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 function App() {
-  const WORKSPACE_ID = 'DEMO_WORKSPACE_001'
+  const params = new URLSearchParams(window.location.search)
+
+  const WORKSPACE_ID =
+    params.get('workspace_id') || 'DEMO_WORKSPACE_001'
 
   const ACCOUNTS_API =
     'https://walid.tail98a0b9.ts.net/webhook/dashboard-accounts'
@@ -71,7 +74,9 @@ function App() {
             : 'Instagram Business',
         icon: account.platform === 'facebook' ? 'f' : '◎',
         className:
-          account.platform === 'facebook' ? 'facebook' : 'instagram',
+          account.platform === 'facebook'
+            ? 'facebook'
+            : 'instagram',
         status: account.status,
       }))
 
@@ -94,7 +99,9 @@ function App() {
 
     try {
       const response = await fetch(
-        `${CONVERSATIONS_API}?workspace_id=${encodeURIComponent(WORKSPACE_ID)}`
+        `${CONVERSATIONS_API}?workspace_id=${encodeURIComponent(
+          WORKSPACE_ID
+        )}`
       )
 
       if (!response.ok) {
@@ -127,7 +134,7 @@ function App() {
   useEffect(() => {
     loadAccounts()
     loadConversations()
-  }, [])
+  }, [WORKSPACE_ID])
 
   // ----------------------------------
   // DASHBOARD STATS
@@ -187,7 +194,9 @@ function App() {
       </div>
 
       <span className="status">
-        {account.status === 'active' ? 'Connected' : account.status}
+        {account.status === 'active'
+          ? 'Connected'
+          : account.status}
       </span>
     </div>
   )
@@ -196,11 +205,18 @@ function App() {
   // CONVERSATION COMPONENT
   // ----------------------------------
 
-  const ConversationCard = ({ conversation, detailed = false }) => {
+  const ConversationCard = ({
+    conversation,
+    detailed = false,
+  }) => {
     const isFacebook = conversation.platform === 'facebook'
 
     return (
-      <div className={detailed ? 'conversation-full' : 'conversation'}>
+      <div
+        className={
+          detailed ? 'conversation-full' : 'conversation'
+        }
+      >
         <div
           className={`platform ${
             isFacebook ? 'facebook' : 'instagram'
@@ -257,11 +273,15 @@ function App() {
             )}
 
             {conversation.needs_reply && (
-              <span className="tag reply">Needs reply</span>
+              <span className="tag reply">
+                Needs reply
+              </span>
             )}
 
             {conversation.needs_human && (
-              <span className="tag reply">Needs human</span>
+              <span className="tag reply">
+                Needs human
+              </span>
             )}
           </div>
 
@@ -369,11 +389,13 @@ function App() {
 
         <div className="sidebar-bottom">
           <div className="workspace">
-            <div className="workspace-avatar">D</div>
+            <div className="workspace-avatar">
+              {WORKSPACE_ID.charAt(0).toUpperCase()}
+            </div>
 
             <div>
-              <strong>Demo Workspace</strong>
-              <span>Administrator</span>
+              <strong>{WORKSPACE_ID}</strong>
+              <span>Workspace</span>
             </div>
           </div>
         </div>
@@ -412,7 +434,9 @@ function App() {
                 </div>
 
                 <strong>
-                  {accountsLoading ? '...' : accounts.length}
+                  {accountsLoading
+                    ? '...'
+                    : accounts.length}
                 </strong>
 
                 <p>Facebook & Instagram</p>
@@ -440,7 +464,9 @@ function App() {
                 </div>
 
                 <strong>
-                  {conversationsLoading ? '...' : needsReplyCount}
+                  {conversationsLoading
+                    ? '...'
+                    : needsReplyCount}
                 </strong>
 
                 <p>Require your attention</p>
@@ -478,7 +504,9 @@ function App() {
 
                   <button
                     className="link-btn"
-                    onClick={() => setPage('conversations')}
+                    onClick={() =>
+                      setPage('conversations')
+                    }
                   >
                     View all
                   </button>
@@ -522,7 +550,10 @@ function App() {
                   accounts
                     .slice(0, 4)
                     .map((account) => (
-                      <div className="account" key={account.id}>
+                      <div
+                        className="account"
+                        key={account.id}
+                      >
                         <div
                           className={`account-icon ${account.className}`}
                         >
@@ -579,8 +610,8 @@ function App() {
                   <h3>Social Conversations</h3>
 
                   <p>
-                    {conversations.length} conversations detected
-                    for this workspace.
+                    {conversations.length} conversations
+                    detected for this workspace.
                   </p>
                 </div>
               </div>
@@ -599,8 +630,8 @@ function App() {
                     <h3>No conversations yet</h3>
 
                     <p>
-                      New Facebook and Instagram comments will
-                      appear here automatically.
+                      New Facebook and Instagram comments
+                      will appear here automatically.
                     </p>
                   </div>
                 )}
@@ -626,8 +657,8 @@ function App() {
                 <h1>Social Accounts</h1>
 
                 <p>
-                  Connect and manage the Facebook and Instagram
-                  accounts you want to monitor.
+                  Connect and manage the Facebook and
+                  Instagram accounts you want to monitor.
                 </p>
               </div>
 
@@ -646,9 +677,9 @@ function App() {
                 <h2>Connect your Meta accounts</h2>
 
                 <p>
-                  Connect Facebook once and choose the Pages and
-                  Instagram accounts your business wants to
-                  monitor.
+                  Connect Facebook once and choose the Pages
+                  and Instagram accounts your business wants
+                  to monitor.
                 </p>
               </div>
 
@@ -666,8 +697,8 @@ function App() {
                   <h3>Connected accounts</h3>
 
                   <p>
-                    These accounts are currently connected to this
-                    workspace.
+                    These accounts are currently connected to
+                    this workspace.
                   </p>
                 </div>
 
@@ -684,7 +715,9 @@ function App() {
               )}
 
               {accountsError && (
-                <p>Unable to load connected accounts.</p>
+                <p>
+                  Unable to load connected accounts.
+                </p>
               )}
 
               {!accountsLoading &&
@@ -707,7 +740,8 @@ function App() {
                 <h1>Settings</h1>
 
                 <p>
-                  Manage your workspace and application settings.
+                  Manage your workspace and application
+                  settings.
                 </p>
               </div>
             </header>
@@ -716,12 +750,13 @@ function App() {
               <h3>Workspace</h3>
 
               <p>
-                <strong>Name:</strong> Demo Workspace
+                <strong>Workspace ID:</strong>{' '}
+                {WORKSPACE_ID}
               </p>
 
               <p>
-                <strong>Workspace ID:</strong>{' '}
-                {WORKSPACE_ID}
+                This dashboard loads social accounts and
+                conversations only for this workspace.
               </p>
             </section>
           </>
