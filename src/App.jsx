@@ -1,111 +1,799 @@
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
+import { supabase } from './supabaseClient'
+
+// ------------------------------------------------
+// API
+// ------------------------------------------------
+
+const ACCOUNTS_API =
+  'https://walid.tail98a0b9.ts.net/webhook/dashboard-accounts'
+
+const CONVERSATIONS_API =
+  'https://walid.tail98a0b9.ts.net/webhook/dashboard-conversations'
+
+// ------------------------------------------------
+// AUTH SCREEN
+// ------------------------------------------------
+
+function AuthScreen() {
+  const [mode, setMode] = useState('login')
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [workspaceName, setWorkspaceName] = useState('')
+
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  const handleLogin = async (event) => {
+    event.preventDefault()
+
+    setLoading(true)
+    setMessage('')
+    setErrorMessage('')
+
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+    if (error) {
+      setErrorMessage(error.message)
+    }
+
+    setLoading(false)
+  }
+
+  const handleSignup = async (event) => {
+    event.preventDefault()
+
+    setLoading(true)
+    setMessage('')
+    setErrorMessage('')
+
+    const { data, error } =
+      await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            workspace_name:
+              workspaceName.trim() || 'My Workspace',
+          },
+        },
+      })
+
+    if (error) {
+      setErrorMessage(error.message)
+      setLoading(false)
+      return
+    }
+
+    if (!data.session) {
+      setMessage(
+        'Account created. Check your email to confirm your account, then log in.'
+      )
+    } else {
+      setMessage('Account created successfully.')
+    }
+
+    setLoading(false)
+  }
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        background: '#f6f7fb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '30px',
+      }}
+    >
+      <div
+        style={{
+          width: '100%',
+          maxWidth: '460px',
+          background: '#ffffff',
+          borderRadius: '22px',
+          padding: '40px',
+          border: '1px solid #e7e9f1',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: '14px',
+            alignItems: 'center',
+            marginBottom: '32px',
+          }}
+        >
+          <div
+            style={{
+              width: '55px',
+              height: '55px',
+              borderRadius: '15px',
+              background: '#6366f1',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: '700',
+              fontSize: '21px',
+            }}
+          >
+            AI
+          </div>
+
+          <div>
+            <h2
+              style={{
+                margin: 0,
+                color: '#111827',
+              }}
+            >
+              Social Listening
+            </h2>
+
+            <span
+              style={{
+                color: '#7b8499',
+              }}
+            >
+              AI Dashboard
+            </span>
+          </div>
+        </div>
+
+        <h1
+          style={{
+            marginBottom: '8px',
+            color: '#111827',
+          }}
+        >
+          {mode === 'login'
+            ? 'Welcome back'
+            : 'Create your account'}
+        </h1>
+
+        <p
+          style={{
+            color: '#7b8499',
+            marginTop: 0,
+            marginBottom: '28px',
+          }}
+        >
+          {mode === 'login'
+            ? 'Log in to access your social listening workspace.'
+            : 'Create your workspace and connect your social accounts.'}
+        </p>
+
+        <form
+          onSubmit={
+            mode === 'login'
+              ? handleLogin
+              : handleSignup
+          }
+        >
+          {mode === 'signup' && (
+            <>
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '7px',
+                  fontWeight: '600',
+                }}
+              >
+                Your name
+              </label>
+
+              <input
+                type="text"
+                value={fullName}
+                onChange={(event) =>
+                  setFullName(event.target.value)
+                }
+                placeholder="Your name"
+                style={inputStyle}
+              />
+
+              <label
+                style={{
+                  display: 'block',
+                  marginBottom: '7px',
+                  fontWeight: '600',
+                }}
+              >
+                Workspace name
+              </label>
+
+              <input
+                type="text"
+                value={workspaceName}
+                onChange={(event) =>
+                  setWorkspaceName(event.target.value)
+                }
+                placeholder="Example: Cocco Baby"
+                style={inputStyle}
+              />
+            </>
+          )}
+
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '7px',
+              fontWeight: '600',
+            }}
+          >
+            Email
+          </label>
+
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(event) =>
+              setEmail(event.target.value)
+            }
+            placeholder="you@example.com"
+            style={inputStyle}
+          />
+
+          <label
+            style={{
+              display: 'block',
+              marginBottom: '7px',
+              fontWeight: '600',
+            }}
+          >
+            Password
+          </label>
+
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={password}
+            onChange={(event) =>
+              setPassword(event.target.value)
+            }
+            placeholder="Your password"
+            style={inputStyle}
+          />
+
+          {errorMessage && (
+            <div
+              style={{
+                background: '#fff0f0',
+                color: '#c53030',
+                padding: '12px 15px',
+                borderRadius: '10px',
+                marginBottom: '18px',
+              }}
+            >
+              {errorMessage}
+            </div>
+          )}
+
+          {message && (
+            <div
+              style={{
+                background: '#eefbf3',
+                color: '#27804a',
+                padding: '12px 15px',
+                borderRadius: '10px',
+                marginBottom: '18px',
+              }}
+            >
+              {message}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              padding: '14px',
+              border: 'none',
+              borderRadius: '11px',
+              background: '#6366f1',
+              color: '#ffffff',
+              fontWeight: '700',
+              fontSize: '16px',
+              cursor: 'pointer',
+            }}
+          >
+            {loading
+              ? 'Please wait...'
+              : mode === 'login'
+              ? 'Log in'
+              : 'Create account'}
+          </button>
+        </form>
+
+        <div
+          style={{
+            textAlign: 'center',
+            marginTop: '25px',
+            color: '#7b8499',
+          }}
+        >
+          {mode === 'login'
+            ? "Don't have an account?"
+            : 'Already have an account?'}
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode(
+                mode === 'login'
+                  ? 'signup'
+                  : 'login'
+              )
+
+              setErrorMessage('')
+              setMessage('')
+            }}
+            style={{
+              border: 'none',
+              background: 'transparent',
+              color: '#6366f1',
+              cursor: 'pointer',
+              fontWeight: '700',
+              marginLeft: '6px',
+            }}
+          >
+            {mode === 'login'
+              ? 'Sign up'
+              : 'Log in'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const inputStyle = {
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '13px 14px',
+  marginBottom: '20px',
+  borderRadius: '10px',
+  border: '1px solid #dfe2eb',
+  fontSize: '15px',
+  outline: 'none',
+}
+
+// ------------------------------------------------
+// MAIN APP
+// ------------------------------------------------
 
 function App() {
-  const params = new URLSearchParams(window.location.search)
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] =
+    useState(true)
 
-  const WORKSPACE_ID =
-    params.get('workspace_id') || 'DEMO_WORKSPACE_001'
+  const [workspace, setWorkspace] =
+    useState(null)
 
-  const ACCOUNTS_API =
-    'https://walid.tail98a0b9.ts.net/webhook/dashboard-accounts'
+  const [workspaceLoading, setWorkspaceLoading] =
+    useState(false)
 
-  const CONVERSATIONS_API =
-    'https://walid.tail98a0b9.ts.net/webhook/dashboard-conversations'
+  const [workspaceError, setWorkspaceError] =
+    useState('')
 
   const [page, setPage] = useState('overview')
 
   const [accounts, setAccounts] = useState([])
-  const [accountsLoading, setAccountsLoading] = useState(true)
-  const [accountsError, setAccountsError] = useState(false)
+  const [accountsLoading, setAccountsLoading] =
+    useState(false)
+  const [accountsError, setAccountsError] =
+    useState(false)
 
-  const [conversations, setConversations] = useState([])
-  const [conversationsLoading, setConversationsLoading] = useState(true)
-  const [conversationsError, setConversationsError] = useState(false)
+  const [conversations, setConversations] =
+    useState([])
 
-  // ----------------------------------
-  // META CONNECTION
-  // ----------------------------------
+  const [
+    conversationsLoading,
+    setConversationsLoading,
+  ] = useState(false)
 
-  const connectMeta = () => {
-    const authUrl =
-      'https://www.facebook.com/v26.0/dialog/oauth' +
-      '?client_id=1092780679954456' +
-      '&redirect_uri=' +
-      encodeURIComponent(
-        'https://walid.tail98a0b9.ts.net/webhook/meta-oauth-callback'
-      ) +
-      '&config_id=1092906659894071' +
-      '&response_type=code' +
-      '&override_default_response_type=true' +
-      '&state=' +
-      encodeURIComponent(WORKSPACE_ID)
+  const [
+    conversationsError,
+    setConversationsError,
+  ] = useState(false)
 
-    window.location.href = authUrl
+  // ------------------------------------------------
+  // LOAD WORKSPACE
+  // ------------------------------------------------
+
+  const loadWorkspace = async (userId) => {
+    if (!userId) return
+
+    setWorkspaceLoading(true)
+    setWorkspaceError('')
+
+    try {
+      const {
+        data: profile,
+        error: profileError,
+      } = await supabase
+        .from('profiles')
+        .select('workspace_id')
+        .eq('id', userId)
+        .single()
+
+      if (profileError) {
+        throw profileError
+      }
+
+      const {
+        data: workspaceData,
+        error: workspaceResultError,
+      } = await supabase
+        .from('workspaces')
+        .select(
+          'id, workspace_code, name, owner_user_id'
+        )
+        .eq('id', profile.workspace_id)
+        .single()
+
+      if (workspaceResultError) {
+        throw workspaceResultError
+      }
+
+      setWorkspace(workspaceData)
+
+      // IMPORTANT:
+      // URL uses workspace_code, NOT Supabase UUID
+      const newUrl = new URL(
+        window.location.href
+      )
+
+      newUrl.searchParams.set(
+        'workspace_id',
+        workspaceData.workspace_code.trim()
+      )
+
+      window.history.replaceState(
+        {},
+        '',
+        newUrl.toString()
+      )
+    } catch (error) {
+      console.error(
+        'Workspace error:',
+        error
+      )
+
+      setWorkspaceError(
+        'Unable to load your workspace.'
+      )
+    } finally {
+      setWorkspaceLoading(false)
+    }
   }
 
-  // ----------------------------------
+  // ------------------------------------------------
+  // AUTH SESSION
+  // ------------------------------------------------
+
+  useEffect(() => {
+    let mounted = true
+
+    const initializeAuth = async () => {
+      const {
+        data: { session: currentSession },
+        error,
+      } =
+        await supabase.auth.getSession()
+
+      if (error) {
+        console.error(
+          'Session error:',
+          error
+        )
+      }
+
+      if (!mounted) return
+
+      setSession(currentSession)
+
+      if (currentSession?.user?.id) {
+        await loadWorkspace(
+          currentSession.user.id
+        )
+      }
+
+      setAuthLoading(false)
+    }
+
+    initializeAuth()
+
+    const {
+      data: { subscription },
+    } =
+      supabase.auth.onAuthStateChange(
+        async (_event, newSession) => {
+          if (!mounted) return
+
+          setSession(newSession)
+
+          if (newSession?.user?.id) {
+            await loadWorkspace(
+              newSession.user.id
+            )
+          } else {
+            setWorkspace(null)
+            setAccounts([])
+            setConversations([])
+          }
+
+          setAuthLoading(false)
+        }
+      )
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, [])
+
+  // ------------------------------------------------
+  // IMPORTANT:
+  // USE WORKSPACE CODE, NOT workspace.id
+  // ------------------------------------------------
+
+  const WORKSPACE_ID =
+    workspace?.workspace_code?.trim() || null
+
+  // ------------------------------------------------
+  // GET ACCESS TOKEN
+  // ------------------------------------------------
+
+  const getAccessToken = async () => {
+    const {
+      data: { session: currentSession },
+      error,
+    } =
+      await supabase.auth.getSession()
+
+    if (error) {
+      throw error
+    }
+
+    if (!currentSession?.access_token) {
+      throw new Error(
+        'No authenticated Supabase session.'
+      )
+    }
+
+    return currentSession.access_token
+  }
+
+  // ------------------------------------------------
+  // SECURE META CONNECTION
+  // ------------------------------------------------
+
+  const connectMeta = async () => {
+    if (
+      !WORKSPACE_ID ||
+      !workspace?.id ||
+      !session?.user?.id
+    ) {
+      alert(
+        'Workspace is not ready yet. Please refresh and try again.'
+      )
+      return
+    }
+
+    try {
+      const stateToken =
+        crypto.randomUUID()
+
+      const { error } = await supabase
+        .from('meta_oauth_states')
+        .insert({
+          state_token: stateToken,
+          user_id: session.user.id,
+          workspace_id: workspace.id,
+          workspace_code: WORKSPACE_ID,
+        })
+
+      if (error) {
+        throw error
+      }
+
+      const redirectUri =
+        'https://walid.tail98a0b9.ts.net/webhook/meta-oauth-callback'
+
+      const authUrl =
+        'https://www.facebook.com/v26.0/dialog/oauth' +
+        '?client_id=1092780679954456' +
+        '&redirect_uri=' +
+        encodeURIComponent(redirectUri) +
+        '&config_id=1092906659894071' +
+        '&response_type=code' +
+        '&override_default_response_type=true' +
+        '&state=' +
+        encodeURIComponent(stateToken)
+
+      window.location.href = authUrl
+    } catch (error) {
+      console.error(
+        'Meta connection error:',
+        error
+      )
+
+      alert(
+        'Unable to start Meta connection. Please try again.'
+      )
+    }
+  }
+
+  // ------------------------------------------------
   // LOAD ACCOUNTS
-  // ----------------------------------
+  // ------------------------------------------------
 
   const loadAccounts = async () => {
+    if (!WORKSPACE_ID) {
+      return
+    }
+
     setAccountsLoading(true)
     setAccountsError(false)
 
     try {
+      // IMPORTANT:
+      // retrieve real Supabase access token
+      const accessToken =
+        await getAccessToken()
+
+      console.log(
+        'Loading accounts for:',
+        WORKSPACE_ID
+      )
+
       const response = await fetch(
-        `${ACCOUNTS_API}?workspace_id=${encodeURIComponent(WORKSPACE_ID)}`
+        `${ACCOUNTS_API}?workspace_id=${encodeURIComponent(
+          WORKSPACE_ID
+        )}`,
+        {
+          method: 'GET',
+
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+          },
+        }
       )
 
       if (!response.ok) {
-        throw new Error('Unable to load accounts')
+        const errorText =
+          await response.text()
+
+        console.error(
+          'Accounts API error:',
+          response.status,
+          errorText
+        )
+
+        throw new Error(
+          `Unable to load accounts: ${response.status}`
+        )
       }
 
       const data = await response.json()
 
-      const formatted = data.map((account) => ({
-        id: account.id,
-        name: account.account_name,
-        accountId: String(account.account_id || '').trim(),
-        platform: account.platform,
-        type:
-          account.platform === 'facebook'
-            ? 'Facebook Page'
-            : 'Instagram Business',
-        icon: account.platform === 'facebook' ? 'f' : '◎',
-        className:
-          account.platform === 'facebook'
-            ? 'facebook'
-            : 'instagram',
-        status: account.status,
-      }))
+      const formatted = data.map(
+        (account) => ({
+          id: account.id,
+
+          name:
+            account.account_name ||
+            'Social Account',
+
+          accountId: String(
+            account.account_id || ''
+          ).trim(),
+
+          platform:
+            account.platform,
+
+          type:
+            account.platform ===
+            'facebook'
+              ? 'Facebook Page'
+              : 'Instagram Business',
+
+          icon:
+            account.platform ===
+            'facebook'
+              ? 'f'
+              : '◎',
+
+          className:
+            account.platform ===
+            'facebook'
+              ? 'facebook'
+              : 'instagram',
+
+          status:
+            account.status,
+        })
+      )
 
       setAccounts(formatted)
     } catch (error) {
-      console.error(error)
+      console.error(
+        'Accounts error:',
+        error
+      )
+
       setAccountsError(true)
     } finally {
       setAccountsLoading(false)
     }
   }
 
-  // ----------------------------------
+  // ------------------------------------------------
   // LOAD CONVERSATIONS
-  // ----------------------------------
+  // ------------------------------------------------
 
   const loadConversations = async () => {
+    if (!WORKSPACE_ID) {
+      return
+    }
+
     setConversationsLoading(true)
     setConversationsError(false)
 
     try {
+      // IMPORTANT:
+      // retrieve real Supabase access token
+      const accessToken =
+        await getAccessToken()
+
+      console.log(
+        'Loading conversations for:',
+        WORKSPACE_ID
+      )
+
       const response = await fetch(
         `${CONVERSATIONS_API}?workspace_id=${encodeURIComponent(
           WORKSPACE_ID
-        )}`
+        )}`,
+        {
+          method: 'GET',
+
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json',
+          },
+        }
       )
 
       if (!response.ok) {
-        throw new Error('Unable to load conversations')
+        const errorText =
+          await response.text()
+
+        console.error(
+          'Conversations API error:',
+          response.status,
+          errorText
+        )
+
+        throw new Error(
+          `Unable to load conversations: ${response.status}`
+        )
       }
 
       const data = await response.json()
@@ -114,82 +802,161 @@ function App() {
         .filter(
           (item) =>
             item.comment_text &&
-            String(item.comment_text).trim() !== ''
+            String(
+              item.comment_text
+            ).trim() !== ''
         )
         .sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
+            new Date(
+              b.createdAt
+            ).getTime() -
+            new Date(
+              a.createdAt
+            ).getTime()
         )
 
       setConversations(cleanData)
     } catch (error) {
-      console.error(error)
+      console.error(
+        'Conversations error:',
+        error
+      )
+
       setConversationsError(true)
     } finally {
       setConversationsLoading(false)
     }
   }
 
+  // ------------------------------------------------
+  // LOAD DASHBOARD DATA
+  // ------------------------------------------------
+
   useEffect(() => {
+    if (!WORKSPACE_ID) return
+
     loadAccounts()
     loadConversations()
   }, [WORKSPACE_ID])
 
-  // ----------------------------------
-  // DASHBOARD STATS
-  // ----------------------------------
+  // ------------------------------------------------
+  // LOGOUT
+  // ------------------------------------------------
 
-  const needsReplyCount = useMemo(() => {
-    return conversations.filter(
-      (conversation) => conversation.needs_reply === true
-    ).length
-  }, [conversations])
+  const logout = async () => {
+    await supabase.auth.signOut()
 
-  const positiveCount = useMemo(() => {
-    return conversations.filter(
-      (conversation) =>
-        String(conversation.sentiment || '').toLowerCase() === 'positive'
-    ).length
-  }, [conversations])
+    setSession(null)
+    setWorkspace(null)
+    setAccounts([])
+    setConversations([])
+
+    const cleanUrl = new URL(
+      window.location.href
+    )
+
+    cleanUrl.searchParams.delete(
+      'workspace_id'
+    )
+
+    window.history.replaceState(
+      {},
+      '',
+      cleanUrl.toString()
+    )
+  }
+
+  // ------------------------------------------------
+  // STATS
+  // ------------------------------------------------
+
+  const needsReplyCount = useMemo(
+    () =>
+      conversations.filter(
+        (conversation) =>
+          conversation.needs_reply ===
+          true
+      ).length,
+    [conversations]
+  )
+
+  const positiveCount = useMemo(
+    () =>
+      conversations.filter(
+        (conversation) =>
+          String(
+            conversation.sentiment || ''
+          ).toLowerCase() ===
+          'positive'
+      ).length,
+    [conversations]
+  )
 
   const positivePercent =
     conversations.length > 0
-      ? Math.round((positiveCount / conversations.length) * 100)
+      ? Math.round(
+          (positiveCount /
+            conversations.length) *
+            100
+        )
       : 0
+
+  // ------------------------------------------------
+  // HELPERS
+  // ------------------------------------------------
 
   const formatDate = (date) => {
     if (!date) return ''
 
-    return new Date(date).toLocaleString()
+    return new Date(
+      date
+    ).toLocaleString()
   }
 
-  const sentimentClass = (sentiment) => {
-    const value = String(sentiment || '').toLowerCase()
+  const sentimentClass = (
+    sentiment
+  ) => {
+    const value = String(
+      sentiment || ''
+    ).toLowerCase()
 
-    if (value === 'positive') return 'positive'
-    if (value === 'negative') return 'reply'
+    if (value === 'positive')
+      return 'positive'
+
+    if (value === 'negative')
+      return 'reply'
 
     return 'neutral'
   }
 
-  // ----------------------------------
-  // ACCOUNT COMPONENT
-  // ----------------------------------
+  // ------------------------------------------------
+  // ACCOUNT ROW
+  // ------------------------------------------------
 
-  const AccountRow = ({ account }) => (
+  const AccountRow = ({
+    account,
+  }) => (
     <div className="social-account-row">
-      <div className={`account-icon ${account.className}`}>
+      <div
+        className={`account-icon ${account.className}`}
+      >
         {account.icon}
       </div>
 
       <div className="social-account-details">
-        <strong>{account.name}</strong>
-        <span>{account.type}</span>
+        <strong>
+          {account.name}
+        </strong>
+
+        <span>
+          {account.type}
+        </span>
       </div>
 
       <div className="monitoring">
         <span className="monitor-dot"></span>
+
         Monitoring
       </div>
 
@@ -201,39 +968,51 @@ function App() {
     </div>
   )
 
-  // ----------------------------------
-  // CONVERSATION COMPONENT
-  // ----------------------------------
+  // ------------------------------------------------
+  // CONVERSATION CARD
+  // ------------------------------------------------
 
   const ConversationCard = ({
     conversation,
     detailed = false,
   }) => {
-    const isFacebook = conversation.platform === 'facebook'
+    const isFacebook =
+      conversation.platform ===
+      'facebook'
 
     return (
       <div
         className={
-          detailed ? 'conversation-full' : 'conversation'
+          detailed
+            ? 'conversation-full'
+            : 'conversation'
         }
       >
         <div
           className={`platform ${
-            isFacebook ? 'facebook' : 'instagram'
+            isFacebook
+              ? 'facebook'
+              : 'instagram'
           }`}
         >
-          {isFacebook ? 'f' : '◎'}
+          {isFacebook
+            ? 'f'
+            : '◎'}
         </div>
 
         <div className="conversation-main">
           <div className="conversation-header">
             <div>
               <strong>
-                {conversation.account_name || 'Social Account'}
+                {conversation.account_name ||
+                  'Social Account'}
               </strong>
 
               <span>
-                {isFacebook ? 'Facebook' : 'Instagram'}
+                {isFacebook
+                  ? 'Facebook'
+                  : 'Instagram'}
+
                 {conversation.author_name
                   ? ` · ${conversation.author_name}`
                   : ''}
@@ -241,7 +1020,9 @@ function App() {
             </div>
 
             <span className="time">
-              {formatDate(conversation.createdAt)}
+              {formatDate(
+                conversation.createdAt
+              )}
             </span>
           </div>
 
@@ -255,7 +1036,8 @@ function App() {
                 conversation.sentiment
               )}`}
             >
-              {conversation.sentiment || 'Unknown'}
+              {conversation.sentiment ||
+                'Unknown'}
             </span>
 
             {conversation.intent && (
@@ -265,11 +1047,15 @@ function App() {
             )}
 
             {conversation.is_question && (
-              <span className="tag">Question</span>
+              <span className="tag">
+                Question
+              </span>
             )}
 
             {conversation.is_complaint && (
-              <span className="tag reply">Complaint</span>
+              <span className="tag reply">
+                Complaint
+              </span>
             )}
 
             {conversation.needs_reply && (
@@ -287,6 +1073,7 @@ function App() {
 
           {detailed && (
             <div className="conversation-ai">
+
               <div className="ai-analysis-block">
                 <span className="analysis-label">
                   AI SUMMARY
@@ -313,17 +1100,20 @@ function App() {
                 <span>
                   Language:{' '}
                   <strong>
-                    {conversation.language || 'Unknown'}
+                    {conversation.language ||
+                      'Unknown'}
                   </strong>
                 </span>
 
                 <span>
                   Urgency:{' '}
                   <strong>
-                    {conversation.urgency || 'Unknown'}
+                    {conversation.urgency ||
+                      'Unknown'}
                   </strong>
                 </span>
               </div>
+
             </div>
           )}
         </div>
@@ -331,26 +1121,110 @@ function App() {
     )
   }
 
+  // ------------------------------------------------
+  // AUTH LOADING
+  // ------------------------------------------------
+
+  if (authLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        Loading...
+      </div>
+    )
+  }
+
+  // ------------------------------------------------
+  // LOGIN
+  // ------------------------------------------------
+
+  if (!session) {
+    return <AuthScreen />
+  }
+
+  // ------------------------------------------------
+  // WORKSPACE LOADING
+  // ------------------------------------------------
+
+  if (workspaceLoading) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        Loading workspace...
+      </div>
+    )
+  }
+
+  if (workspaceError) {
+    return (
+      <div
+        style={{
+          padding: '40px',
+        }}
+      >
+        <h2>
+          Workspace error
+        </h2>
+
+        <p>{workspaceError}</p>
+
+        <button
+          onClick={logout}
+        >
+          Log out
+        </button>
+      </div>
+    )
+  }
+
+  // ------------------------------------------------
+  // DASHBOARD
+  // ------------------------------------------------
+
   return (
     <div className="app">
-      {/* SIDEBAR */}
 
       <aside className="sidebar">
+
         <div className="brand">
-          <div className="brand-icon">AI</div>
+          <div className="brand-icon">
+            AI
+          </div>
 
           <div>
-            <h2>Social Listening</h2>
-            <span>AI Dashboard</span>
+            <h2>
+              Social Listening
+            </h2>
+
+            <span>
+              AI Dashboard
+            </span>
           </div>
         </div>
 
         <nav className="nav">
+
           <button
             className={`nav-item ${
-              page === 'overview' ? 'active' : ''
+              page === 'overview'
+                ? 'active'
+                : ''
             }`}
-            onClick={() => setPage('overview')}
+            onClick={() =>
+              setPage('overview')
+            }
           >
             <span>◫</span>
             Overview
@@ -358,9 +1232,15 @@ function App() {
 
           <button
             className={`nav-item ${
-              page === 'conversations' ? 'active' : ''
+              page === 'conversations'
+                ? 'active'
+                : ''
             }`}
-            onClick={() => setPage('conversations')}
+            onClick={() =>
+              setPage(
+                'conversations'
+              )
+            }
           >
             <span>◉</span>
             Conversations
@@ -368,9 +1248,13 @@ function App() {
 
           <button
             className={`nav-item ${
-              page === 'accounts' ? 'active' : ''
+              page === 'accounts'
+                ? 'active'
+                : ''
             }`}
-            onClick={() => setPage('accounts')}
+            onClick={() =>
+              setPage('accounts')
+            }
           >
             <span>◎</span>
             Social Accounts
@@ -378,59 +1262,86 @@ function App() {
 
           <button
             className={`nav-item ${
-              page === 'settings' ? 'active' : ''
+              page === 'settings'
+                ? 'active'
+                : ''
             }`}
-            onClick={() => setPage('settings')}
+            onClick={() =>
+              setPage('settings')
+            }
           >
             <span>⚙</span>
             Settings
           </button>
+
         </nav>
 
         <div className="sidebar-bottom">
           <div className="workspace">
+
             <div className="workspace-avatar">
-              {WORKSPACE_ID.charAt(0).toUpperCase()}
+              {workspace?.name
+                ?.charAt(0)
+                .toUpperCase() ||
+                'W'}
             </div>
 
             <div>
-              <strong>{WORKSPACE_ID}</strong>
-              <span>Workspace</span>
+              <strong>
+                {workspace?.name ||
+                  WORKSPACE_ID}
+              </strong>
+
+              <span>
+                {WORKSPACE_ID}
+              </span>
             </div>
+
           </div>
         </div>
       </aside>
 
-      {/* MAIN */}
-
       <main className="main">
+
         {/* OVERVIEW */}
 
         {page === 'overview' && (
           <>
             <header className="topbar">
               <div>
-                <h1>Overview</h1>
+                <h1>
+                  Overview
+                </h1>
 
                 <p>
-                  Monitor and understand conversations across
-                  your social accounts.
+                  Monitor and understand
+                  conversations across your
+                  social accounts.
                 </p>
               </div>
 
               <button
                 className="connect-btn"
-                onClick={() => setPage('accounts')}
+                onClick={() =>
+                  setPage('accounts')
+                }
               >
-                + Connect Facebook & Instagram
+                + Connect Facebook &
+                Instagram
               </button>
             </header>
 
             <section className="stats">
+
               <div className="stat-card">
                 <div className="stat-top">
-                  <span>Connected Accounts</span>
-                  <div className="stat-icon">◎</div>
+                  <span>
+                    Connected Accounts
+                  </span>
+
+                  <div className="stat-icon">
+                    ◎
+                  </div>
                 </div>
 
                 <strong>
@@ -439,13 +1350,20 @@ function App() {
                     : accounts.length}
                 </strong>
 
-                <p>Facebook & Instagram</p>
+                <p>
+                  Facebook & Instagram
+                </p>
               </div>
 
               <div className="stat-card">
                 <div className="stat-top">
-                  <span>Conversations</span>
-                  <div className="stat-icon">◉</div>
+                  <span>
+                    Conversations
+                  </span>
+
+                  <div className="stat-icon">
+                    ◉
+                  </div>
                 </div>
 
                 <strong>
@@ -454,13 +1372,20 @@ function App() {
                     : conversations.length}
                 </strong>
 
-                <p>Comments analyzed</p>
+                <p>
+                  Comments analyzed
+                </p>
               </div>
 
               <div className="stat-card">
                 <div className="stat-top">
-                  <span>Need Reply</span>
-                  <div className="stat-icon">↩</div>
+                  <span>
+                    Need Reply
+                  </span>
+
+                  <div className="stat-icon">
+                    ↩
+                  </div>
                 </div>
 
                 <strong>
@@ -469,13 +1394,20 @@ function App() {
                     : needsReplyCount}
                 </strong>
 
-                <p>Require your attention</p>
+                <p>
+                  Require your attention
+                </p>
               </div>
 
               <div className="stat-card">
                 <div className="stat-top">
-                  <span>Positive Sentiment</span>
-                  <div className="stat-icon">☺</div>
+                  <span>
+                    Positive Sentiment
+                  </span>
+
+                  <div className="stat-icon">
+                    ☺
+                  </div>
                 </div>
 
                 <strong>
@@ -484,28 +1416,36 @@ function App() {
                     : `${positivePercent}%`}
                 </strong>
 
-                <p>Across conversations</p>
+                <p>
+                  Across conversations
+                </p>
               </div>
+
             </section>
 
             <div className="content-grid">
-              {/* RECENT CONVERSATIONS */}
 
               <section className="panel conversations-panel">
+
                 <div className="panel-header">
                   <div>
-                    <h3>Recent Conversations</h3>
+                    <h3>
+                      Recent Conversations
+                    </h3>
 
                     <p>
-                      Latest comments detected by your social
-                      listening engine.
+                      Latest comments detected
+                      by your social listening
+                      engine.
                     </p>
                   </div>
 
                   <button
                     className="link-btn"
                     onClick={() =>
-                      setPage('conversations')
+                      setPage(
+                        'conversations'
+                      )
                     }
                   >
                     View all
@@ -513,71 +1453,126 @@ function App() {
                 </div>
 
                 {conversationsLoading && (
-                  <p>Loading conversations...</p>
+                  <p>
+                    Loading conversations...
+                  </p>
+                )}
+
+                {conversationsError && (
+                  <p>
+                    Unable to load
+                    conversations.
+                  </p>
                 )}
 
                 {!conversationsLoading &&
-                  conversations.length === 0 && (
-                    <p>No conversations yet.</p>
+                  conversations.length ===
+                    0 && (
+                    <p>
+                      No conversations yet.
+                    </p>
                   )}
 
                 {!conversationsLoading &&
                   conversations
                     .slice(0, 3)
-                    .map((conversation) => (
-                      <ConversationCard
-                        key={conversation.id}
-                        conversation={conversation}
-                      />
-                    ))}
+                    .map(
+                      (
+                        conversation
+                      ) => (
+                        <ConversationCard
+                          key={
+                            conversation.id
+                          }
+                          conversation={
+                            conversation
+                          }
+                        />
+                      )
+                    )}
+
               </section>
 
-              {/* CONNECTED ACCOUNTS */}
-
               <section className="panel accounts-panel">
+
                 <div className="panel-header">
                   <div>
-                    <h3>Connected Accounts</h3>
-                    <p>Accounts currently monitored.</p>
+                    <h3>
+                      Connected Accounts
+                    </h3>
+
+                    <p>
+                      Accounts currently
+                      monitored.
+                    </p>
                   </div>
                 </div>
 
                 {accountsLoading && (
-                  <p>Loading connected accounts...</p>
+                  <p>
+                    Loading connected
+                    accounts...
+                  </p>
                 )}
+
+                {accountsError && (
+                  <p>
+                    Unable to load accounts.
+                  </p>
+                )}
+
+                {!accountsLoading &&
+                  accounts.length ===
+                    0 && (
+                    <p>
+                      No accounts connected
+                      yet.
+                    </p>
+                  )}
 
                 {!accountsLoading &&
                   accounts
                     .slice(0, 4)
-                    .map((account) => (
-                      <div
-                        className="account"
-                        key={account.id}
-                      >
+                    .map(
+                      (account) => (
                         <div
-                          className={`account-icon ${account.className}`}
+                          className="account"
+                          key={account.id}
                         >
-                          {account.icon}
-                        </div>
+                          <div
+                            className={`account-icon ${account.className}`}
+                          >
+                            {account.icon}
+                          </div>
 
-                        <div className="account-info">
-                          <strong>{account.name}</strong>
-                          <span>{account.type}</span>
-                        </div>
+                          <div className="account-info">
+                            <strong>
+                              {account.name}
+                            </strong>
 
-                        <span className="status">
-                          Connected
-                        </span>
-                      </div>
-                    ))}
+                            <span>
+                              {account.type}
+                            </span>
+                          </div>
+
+                          <span className="status">
+                            Connected
+                          </span>
+                        </div>
+                      )
+                    )}
 
                 <button
                   className="secondary-btn"
-                  onClick={() => setPage('accounts')}
+                  onClick={() =>
+                    setPage('accounts')
+                  }
                 >
                   Manage social accounts
                 </button>
+
               </section>
+
             </div>
           </>
         )}
@@ -588,62 +1583,90 @@ function App() {
           <>
             <header className="topbar">
               <div>
-                <h1>Conversations</h1>
+                <h1>
+                  Conversations
+                </h1>
 
                 <p>
-                  View comments detected and analyzed by your
-                  AI Social Listening Engine.
+                  View comments detected and
+                  analyzed by your AI Social
+                  Listening Engine.
                 </p>
               </div>
 
               <button
                 className="secondary-btn refresh-btn"
-                onClick={loadConversations}
+                onClick={
+                  loadConversations
+                }
               >
                 Refresh
               </button>
             </header>
 
             <section className="panel conversations-page">
+
               <div className="panel-header">
                 <div>
-                  <h3>Social Conversations</h3>
+                  <h3>
+                    Social Conversations
+                  </h3>
 
                   <p>
-                    {conversations.length} conversations
-                    detected for this workspace.
+                    {conversations.length}{' '}
+                    conversations detected for
+                    this workspace.
                   </p>
                 </div>
               </div>
 
               {conversationsLoading && (
-                <p>Loading conversations...</p>
+                <p>
+                  Loading conversations...
+                </p>
               )}
 
               {conversationsError && (
-                <p>Unable to load conversations.</p>
+                <p>
+                  Unable to load
+                  conversations.
+                </p>
               )}
 
               {!conversationsLoading &&
-                conversations.length === 0 && (
+                conversations.length ===
+                  0 && (
                   <div className="empty-state">
-                    <h3>No conversations yet</h3>
+                    <h3>
+                      No conversations yet
+                    </h3>
 
                     <p>
-                      New Facebook and Instagram comments
-                      will appear here automatically.
+                      New Facebook and
+                      Instagram comments will
+                      appear here
+                      automatically.
                     </p>
                   </div>
                 )}
 
               {!conversationsLoading &&
-                conversations.map((conversation) => (
-                  <ConversationCard
-                    key={conversation.id}
-                    conversation={conversation}
-                    detailed
-                  />
-                ))}
+                conversations.map(
+                  (
+                    conversation
+                  ) => (
+                    <ConversationCard
+                      key={
+                        conversation.id
+                      }
+                      conversation={
+                        conversation
+                      }
+                      detailed
+                    />
+                  )
+                )}
+
             </section>
           </>
         )}
@@ -654,11 +1677,15 @@ function App() {
           <>
             <header className="topbar">
               <div>
-                <h1>Social Accounts</h1>
+                <h1>
+                  Social Accounts
+                </h1>
 
                 <p>
-                  Connect and manage the Facebook and
-                  Instagram accounts you want to monitor.
+                  Connect and manage the
+                  Facebook and Instagram
+                  accounts you want to
+                  monitor.
                 </p>
               </div>
 
@@ -666,20 +1693,28 @@ function App() {
                 className="connect-btn"
                 onClick={connectMeta}
               >
-                + Connect Facebook & Instagram
+                + Connect Facebook &
+                Instagram
               </button>
             </header>
 
             <section className="accounts-connect-card">
-              <div className="connect-logo">◎</div>
+
+              <div className="connect-logo">
+                ◎
+              </div>
 
               <div className="connect-copy">
-                <h2>Connect your Meta accounts</h2>
+                <h2>
+                  Connect your Meta
+                  accounts
+                </h2>
 
                 <p>
-                  Connect Facebook once and choose the Pages
-                  and Instagram accounts your business wants
-                  to monitor.
+                  Connect Facebook once and
+                  choose the Pages and
+                  Instagram accounts your
+                  business wants to monitor.
                 </p>
               </div>
 
@@ -689,15 +1724,20 @@ function App() {
               >
                 Connect Meta Account
               </button>
+
             </section>
 
             <section className="panel social-account-list">
+
               <div className="panel-header">
                 <div>
-                  <h3>Connected accounts</h3>
+                  <h3>
+                    Connected accounts
+                  </h3>
 
                   <p>
-                    These accounts are currently connected to
+                    These accounts are
+                    currently connected to
                     this workspace.
                   </p>
                 </div>
@@ -711,22 +1751,46 @@ function App() {
               </div>
 
               {accountsLoading && (
-                <p>Loading connected accounts...</p>
+                <p>
+                  Loading connected
+                  accounts...
+                </p>
               )}
 
               {accountsError && (
                 <p>
-                  Unable to load connected accounts.
+                  Unable to load connected
+                  accounts.
                 </p>
               )}
 
               {!accountsLoading &&
-                accounts.map((account) => (
-                  <AccountRow
-                    key={account.id}
-                    account={account}
-                  />
-                ))}
+                accounts.length ===
+                  0 && (
+                  <div className="empty-state">
+                    <h3>
+                      No social accounts
+                      connected
+                    </h3>
+
+                    <p>
+                      Connect your Facebook
+                      and Instagram accounts
+                      to start monitoring.
+                    </p>
+                  </div>
+                )}
+
+              {!accountsLoading &&
+                accounts.map(
+                  (account) => (
+                    <AccountRow
+                      key={account.id}
+                      account={account}
+                    />
+                  )
+                )}
+
             </section>
           </>
         )}
@@ -737,30 +1801,54 @@ function App() {
           <>
             <header className="topbar">
               <div>
-                <h1>Settings</h1>
+                <h1>
+                  Settings
+                </h1>
 
                 <p>
-                  Manage your workspace and application
-                  settings.
+                  Manage your workspace and
+                  account.
                 </p>
               </div>
             </header>
 
             <section className="panel">
-              <h3>Workspace</h3>
+              <h3>
+                Workspace
+              </h3>
 
               <p>
-                <strong>Workspace ID:</strong>{' '}
+                <strong>
+                  Workspace:
+                </strong>{' '}
+                {workspace?.name}
+              </p>
+
+              <p>
+                <strong>
+                  Workspace Code:
+                </strong>{' '}
                 {WORKSPACE_ID}
               </p>
 
               <p>
-                This dashboard loads social accounts and
-                conversations only for this workspace.
+                <strong>
+                  User:
+                </strong>{' '}
+                {session?.user?.email}
               </p>
+
+              <button
+                className="secondary-btn"
+                onClick={logout}
+              >
+                Log out
+              </button>
+
             </section>
           </>
         )}
+
       </main>
     </div>
   )
