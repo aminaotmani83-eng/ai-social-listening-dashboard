@@ -59,6 +59,7 @@ function AuthScreen() {
       await supabase.auth.signUp({
         email,
         password,
+
         options: {
           data: {
             full_name: fullName,
@@ -452,8 +453,6 @@ function App() {
 
       setWorkspace(workspaceData)
 
-      // IMPORTANT:
-      // URL uses workspace_code, NOT Supabase UUID
       const newUrl = new URL(
         window.location.href
       )
@@ -548,8 +547,7 @@ function App() {
   }, [])
 
   // ------------------------------------------------
-  // IMPORTANT:
-  // USE WORKSPACE CODE, NOT workspace.id
+  // CURRENT WORKSPACE
   // ------------------------------------------------
 
   const WORKSPACE_ID =
@@ -652,15 +650,8 @@ function App() {
     setAccountsError(false)
 
     try {
-      // IMPORTANT:
-      // retrieve real Supabase access token
       const accessToken =
         await getAccessToken()
-
-      console.log(
-        'Loading accounts for:',
-        WORKSPACE_ID
-      )
 
       const response = await fetch(
         `${ACCOUNTS_API}?workspace_id=${encodeURIComponent(
@@ -757,15 +748,8 @@ function App() {
     setConversationsError(false)
 
     try {
-      // IMPORTANT:
-      // retrieve real Supabase access token
       const accessToken =
         await getAccessToken()
-
-      console.log(
-        'Loading conversations for:',
-        WORKSPACE_ID
-      )
 
       const response = await fetch(
         `${CONVERSATIONS_API}?workspace_id=${encodeURIComponent(
@@ -938,6 +922,7 @@ function App() {
     account,
   }) => (
     <div className="social-account-row">
+
       <div
         className={`account-icon ${account.className}`}
       >
@@ -965,6 +950,7 @@ function App() {
           ? 'Connected'
           : account.status}
       </span>
+
     </div>
   )
 
@@ -988,6 +974,7 @@ function App() {
             : 'conversation'
         }
       >
+
         <div
           className={`platform ${
             isFacebook
@@ -1001,6 +988,7 @@ function App() {
         </div>
 
         <div className="conversation-main">
+
           <div className="conversation-header">
             <div>
               <strong>
@@ -1031,6 +1019,7 @@ function App() {
           </p>
 
           <div className="tags">
+
             <span
               className={`tag ${sentimentClass(
                 conversation.sentiment
@@ -1069,6 +1058,7 @@ function App() {
                 Needs human
               </span>
             )}
+
           </div>
 
           {detailed && (
@@ -1097,6 +1087,7 @@ function App() {
               </div>
 
               <div className="conversation-meta">
+
                 <span>
                   Language:{' '}
                   <strong>
@@ -1112,11 +1103,14 @@ function App() {
                       'Unknown'}
                   </strong>
                 </span>
+
               </div>
 
             </div>
           )}
+
         </div>
+
       </div>
     )
   }
@@ -1196,9 +1190,12 @@ function App() {
   return (
     <div className="app">
 
+      {/* SIDEBAR */}
+
       <aside className="sidebar">
 
         <div className="brand">
+
           <div className="brand-icon">
             AI
           </div>
@@ -1212,6 +1209,7 @@ function App() {
               AI Dashboard
             </span>
           </div>
+
         </div>
 
         <nav className="nav">
@@ -1260,6 +1258,22 @@ function App() {
             Social Accounts
           </button>
 
+          {/* NEW KNOWLEDGE BASE */}
+
+          <button
+            className={`nav-item ${
+              page === 'knowledge'
+                ? 'active'
+                : ''
+            }`}
+            onClick={() =>
+              setPage('knowledge')
+            }
+          >
+            <span>▦</span>
+            Knowledge Base
+          </button>
+
           <button
             className={`nav-item ${
               page === 'settings'
@@ -1277,6 +1291,7 @@ function App() {
         </nav>
 
         <div className="sidebar-bottom">
+
           <div className="workspace">
 
             <div className="workspace-avatar">
@@ -1298,8 +1313,12 @@ function App() {
             </div>
 
           </div>
+
         </div>
+
       </aside>
+
+      {/* MAIN */}
 
       <main className="main">
 
@@ -1308,6 +1327,7 @@ function App() {
         {page === 'overview' && (
           <>
             <header className="topbar">
+
               <div>
                 <h1>
                   Overview
@@ -1329,12 +1349,15 @@ function App() {
                 + Connect Facebook &
                 Instagram
               </button>
+
             </header>
 
             <section className="stats">
 
               <div className="stat-card">
+
                 <div className="stat-top">
+
                   <span>
                     Connected Accounts
                   </span>
@@ -1342,6 +1365,7 @@ function App() {
                   <div className="stat-icon">
                     ◎
                   </div>
+
                 </div>
 
                 <strong>
@@ -1353,10 +1377,13 @@ function App() {
                 <p>
                   Facebook & Instagram
                 </p>
+
               </div>
 
               <div className="stat-card">
+
                 <div className="stat-top">
+
                   <span>
                     Conversations
                   </span>
@@ -1364,6 +1391,7 @@ function App() {
                   <div className="stat-icon">
                     ◉
                   </div>
+
                 </div>
 
                 <strong>
@@ -1375,10 +1403,13 @@ function App() {
                 <p>
                   Comments analyzed
                 </p>
+
               </div>
 
               <div className="stat-card">
+
                 <div className="stat-top">
+
                   <span>
                     Need Reply
                   </span>
@@ -1386,6 +1417,7 @@ function App() {
                   <div className="stat-icon">
                     ↩
                   </div>
+
                 </div>
 
                 <strong>
@@ -1397,10 +1429,13 @@ function App() {
                 <p>
                   Require your attention
                 </p>
+
               </div>
 
               <div className="stat-card">
+
                 <div className="stat-top">
+
                   <span>
                     Positive Sentiment
                   </span>
@@ -1408,6 +1443,7 @@ function App() {
                   <div className="stat-icon">
                     ☺
                   </div>
+
                 </div>
 
                 <strong>
@@ -1419,16 +1455,21 @@ function App() {
                 <p>
                   Across conversations
                 </p>
+
               </div>
 
             </section>
 
             <div className="content-grid">
 
+              {/* RECENT CONVERSATIONS */}
+
               <section className="panel conversations-panel">
 
                 <div className="panel-header">
+
                   <div>
+
                     <h3>
                       Recent Conversations
                     </h3>
@@ -1438,6 +1479,7 @@ function App() {
                       by your social listening
                       engine.
                     </p>
+
                   </div>
 
                   <button
@@ -1450,6 +1492,7 @@ function App() {
                   >
                     View all
                   </button>
+
                 </div>
 
                 {conversationsLoading && (
@@ -1493,10 +1536,14 @@ function App() {
 
               </section>
 
+              {/* CONNECTED ACCOUNTS */}
+
               <section className="panel accounts-panel">
 
                 <div className="panel-header">
+
                   <div>
+
                     <h3>
                       Connected Accounts
                     </h3>
@@ -1505,7 +1552,9 @@ function App() {
                       Accounts currently
                       monitored.
                     </p>
+
                   </div>
+
                 </div>
 
                 {accountsLoading && (
@@ -1539,6 +1588,7 @@ function App() {
                           className="account"
                           key={account.id}
                         >
+
                           <div
                             className={`account-icon ${account.className}`}
                           >
@@ -1546,6 +1596,7 @@ function App() {
                           </div>
 
                           <div className="account-info">
+
                             <strong>
                               {account.name}
                             </strong>
@@ -1553,11 +1604,13 @@ function App() {
                             <span>
                               {account.type}
                             </span>
+
                           </div>
 
                           <span className="status">
                             Connected
                           </span>
+
                         </div>
                       )
                     )}
@@ -1582,7 +1635,9 @@ function App() {
         {page === 'conversations' && (
           <>
             <header className="topbar">
+
               <div>
+
                 <h1>
                   Conversations
                 </h1>
@@ -1592,6 +1647,7 @@ function App() {
                   analyzed by your AI Social
                   Listening Engine.
                 </p>
+
               </div>
 
               <button
@@ -1602,12 +1658,15 @@ function App() {
               >
                 Refresh
               </button>
+
             </header>
 
             <section className="panel conversations-page">
 
               <div className="panel-header">
+
                 <div>
+
                   <h3>
                     Social Conversations
                   </h3>
@@ -1617,7 +1676,9 @@ function App() {
                     conversations detected for
                     this workspace.
                   </p>
+
                 </div>
+
               </div>
 
               {conversationsLoading && (
@@ -1637,6 +1698,7 @@ function App() {
                 conversations.length ===
                   0 && (
                   <div className="empty-state">
+
                     <h3>
                       No conversations yet
                     </h3>
@@ -1647,6 +1709,7 @@ function App() {
                       appear here
                       automatically.
                     </p>
+
                   </div>
                 )}
 
@@ -1676,7 +1739,9 @@ function App() {
         {page === 'accounts' && (
           <>
             <header className="topbar">
+
               <div>
+
                 <h1>
                   Social Accounts
                 </h1>
@@ -1687,6 +1752,7 @@ function App() {
                   accounts you want to
                   monitor.
                 </p>
+
               </div>
 
               <button
@@ -1696,6 +1762,7 @@ function App() {
                 + Connect Facebook &
                 Instagram
               </button>
+
             </header>
 
             <section className="accounts-connect-card">
@@ -1705,6 +1772,7 @@ function App() {
               </div>
 
               <div className="connect-copy">
+
                 <h2>
                   Connect your Meta
                   accounts
@@ -1716,6 +1784,7 @@ function App() {
                   Instagram accounts your
                   business wants to monitor.
                 </p>
+
               </div>
 
               <button
@@ -1730,7 +1799,9 @@ function App() {
             <section className="panel social-account-list">
 
               <div className="panel-header">
+
                 <div>
+
                   <h3>
                     Connected accounts
                   </h3>
@@ -1740,6 +1811,7 @@ function App() {
                     currently connected to
                     this workspace.
                   </p>
+
                 </div>
 
                 <span className="accounts-count">
@@ -1748,6 +1820,7 @@ function App() {
                     ? 'account'
                     : 'accounts'}
                 </span>
+
               </div>
 
               {accountsLoading && (
@@ -1768,6 +1841,7 @@ function App() {
                 accounts.length ===
                   0 && (
                   <div className="empty-state">
+
                     <h3>
                       No social accounts
                       connected
@@ -1778,6 +1852,7 @@ function App() {
                       and Instagram accounts
                       to start monitoring.
                     </p>
+
                   </div>
                 )}
 
@@ -1795,12 +1870,79 @@ function App() {
           </>
         )}
 
+        {/* KNOWLEDGE BASE */}
+
+        {page === 'knowledge' && (
+          <>
+            <header className="topbar">
+
+              <div>
+
+                <h1>
+                  Knowledge Base
+                </h1>
+
+                <p>
+                  Manage the information your
+                  AI uses to understand your
+                  brand and products.
+                </p>
+
+              </div>
+
+            </header>
+
+            <section className="panel">
+
+              <div className="panel-header">
+
+                <div>
+
+                  <h3>
+                    Products
+                  </h3>
+
+                  <p>
+                    Upload your product catalog
+                    so the AI can understand
+                    your products before
+                    replying to customers.
+                  </p>
+
+                </div>
+
+                <button className="connect-btn">
+                  + Upload Product File
+                </button>
+
+              </div>
+
+              <div className="empty-state">
+
+                <h3>
+                  No products imported yet
+                </h3>
+
+                <p>
+                  Upload a CSV or Excel product
+                  catalog to create your AI
+                  product knowledge base.
+                </p>
+
+              </div>
+
+            </section>
+          </>
+        )}
+
         {/* SETTINGS */}
 
         {page === 'settings' && (
           <>
             <header className="topbar">
+
               <div>
+
                 <h1>
                   Settings
                 </h1>
@@ -1809,10 +1951,13 @@ function App() {
                   Manage your workspace and
                   account.
                 </p>
+
               </div>
+
             </header>
 
             <section className="panel">
+
               <h3>
                 Workspace
               </h3>
@@ -1850,6 +1995,7 @@ function App() {
         )}
 
       </main>
+
     </div>
   )
 }
